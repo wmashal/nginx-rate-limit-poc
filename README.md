@@ -1,3 +1,9 @@
+## Build Openresty
+
+cd manifest
+docker build --platform linux/amd64 --no-cache -t <user>/custom-openresty:latest ./nginx
+docker push <user>/custom-openresty:latest
+
 ## Deploy
 
 cf push -f manifest.yml
