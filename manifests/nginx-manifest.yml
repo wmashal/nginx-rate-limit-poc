@@ -1,0 +1,21 @@
+applications:
+  - name: nginx-instance-1
+    memory: 512M
+    disk_quota: 2G
+    instances: 2
+    docker:
+      image: wmashal/custom-openresty:latest
+    services:
+      - dynatrace
+      - redis-service
+    env:
+      DT_CLUSTER_ID: sm-nginx-api-app
+      DT_CUSTOM_PROP: Service-Inventory=SERVICE-324 BCP-Component=BC-NEO-SVCMGR Service-Name=Service-Manager Application=service-manager-nginx-api-app Landscape-Label=cf-eu20-staging
+      DT_RELEASE_BUILD_VERSION: 1.236.0
+      DT_RELEASE_PRODUCT: product-cf/service-manager
+      DT_RELEASE_STAGE: hcp-staging
+      DT_RELEASE_VERSION: rel-2025.T01b
+      DT_TAGS: AppName=sm-nginx-api-app
+      ONEAGENT_DOWNLOAD_DIR: /tmp
+    routes:
+      - route: sm-nginx.cert.cfapps.stagingazure.hanavlab.ondemand.com

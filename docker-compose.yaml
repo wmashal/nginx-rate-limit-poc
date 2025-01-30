@@ -1,0 +1,102 @@
+services:
+  sm-mock:
+    build:
+      context: ../sm-mock
+      dockerfile: Dockerfile
+    ports:
+      - "8899:8899"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8899/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  sm-mock-v2:
+    build:
+      context: ../sm-mock-v2
+      dockerfile: Dockerfile
+    ports:
+      - "8999:8999"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8999/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  nginx1:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./logs:/var/log/nginx
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SEMAPHORE_SIZE=100
+      - SEMAPHORE_THRESHOLD=50
+      - BASE_DELAY_MS=100
+    depends_on:
+      - sm-mock
+      - sm-mock-v2
+      - redis
+    networks:
+      - app-network
+
+  nginx2:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8082:80"
+    volumes:
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./logs:/var/log/nginx
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SEMAPHORE_SIZE=100
+      - SEMAPHORE_THRESHOLD=50
+      - BASE_DELAY_MS=100
+    depends_on:
+      - sm-mock
+      - sm-mock-v2
+      - redis
+    networks:
+      - app-network
+
+  loadbalancer:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./loadbalancer.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - nginx1
+      - nginx2
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

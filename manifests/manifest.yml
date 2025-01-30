@@ -1,0 +1,26 @@
+applications:
+  - name: sm-mock
+    memory: 256M
+    instances: 1
+    buildpack: go_buildpack
+    path: ../sm-mock
+    services:
+      - dynatrace
+    health-check-type: http
+    health-check-http-endpoint: /health
+    timeout: 180
+    routes:
+      - route: sm-mock.cert.cfapps.stagingazure.hanavlab.ondemand.com
+
+  - name: sm-mock-v2
+    memory: 256M
+    instances: 1
+    buildpack: go_buildpack
+    path: ../sm-mock-v2
+    services:
+      - dynatrace
+    health-check-type: http
+    health-check-http-endpoint: /health
+    timeout: 180
+    routes:
+      - route: sm-mock-v2.cert.cfapps.stagingazure.hanavlab.ondemand.com
