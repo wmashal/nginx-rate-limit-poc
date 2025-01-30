@@ -1,17 +1,30 @@
 ## Build Openresty
-
+```
 cd manifest
 docker build --platform linux/amd64 --no-cache -t <user>/custom-openresty:latest ./nginx
 docker push <user>/custom-openresty:latest
+```
 
-## Deploy
+## Deploy localy
+```
+docker-compose down
+docker-compose up --build
+```
 
+## Test localy
+under the root folder
+```
+./test_nginx.sh 
+```
+
+## Deploy CF
+```
 cf push -f manifest.yml
 cf push -f nginx-manifest.yml
 
 cf add-network-policy nginx-instance-1 sm-mock-v2 --protocol tcp --port 443
 cf add-network-policy nginx-instance-1 sm-mock --protocol tcp --port 443
-
+```
 
 ## Test
 ### Test throtteling
